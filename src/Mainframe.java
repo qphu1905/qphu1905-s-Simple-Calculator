@@ -70,6 +70,9 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
             switch (e.getActionCommand()) {
                 case "del":
                     expression = expression.substring(0, expression.length() - 1);
+                    expressionDisplay.setText(expression);
+                    resultDisplay.setText("");
+                    expressionComplete = false;
                     break;
 
                 case "ac":
