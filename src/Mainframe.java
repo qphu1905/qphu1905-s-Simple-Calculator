@@ -5,6 +5,7 @@ import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class Mainframe extends javax.swing.JFrame implements ActionListener {
     int width;
@@ -39,12 +40,12 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        System.out.println(e.getActionCommand());
         String action = e.getActionCommand();
         if (expressionComplete == false) {
             switch (action) {
+                //todo: fix delete not working with spaces DONE
                 case "del":
-                    expression = expression.substring(0, expression.length() - 1);
+                    delete();
                     expressionDisplay.setText(expression);
                     break;
 
@@ -56,8 +57,26 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
 
                 case "=":
                     expressionComplete = true;
-                    resultDisplay.setText(expression);
-                    System.out.println(expression);
+                    resultDisplay.setText(String.valueOf(parseExpression(expression)));
+                    break;
+
+                // Operators and Parenthesis needs padding to be parsed correctly
+                case "+":
+                case "-":
+                case "*":
+                case "/":
+                    expression = expression + " " + action + " ";       //left and right padding for parenthesis
+                    expressionDisplay.setText(expression);
+                    break;
+
+                case "(":
+                    expression = expression + action + " ";     //right padding for left parenthesis
+                    expressionDisplay.setText(expression);
+                    break;
+
+                case ")":
+                    expression = expression + " " + action;     //left padding for right parenthesis
+                    expressionDisplay.setText(expression);
                     break;
 
                 default:
@@ -68,8 +87,9 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         }
         else if (expressionComplete) {
             switch (e.getActionCommand()) {
+                //todo: fix delete not working with spaces DONE
                 case "del":
-                    expression = expression.substring(0, expression.length() - 1);
+                    delete();
                     expressionDisplay.setText(expression);
                     resultDisplay.setText("");
                     expressionComplete = false;
@@ -82,9 +102,7 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
                     expressionComplete = false;
                     break;
 
-                case "=":
-                    expressionComplete = true;
-                    System.out.println(expression);
+                default:
                     break;
             }
         }
@@ -207,7 +225,53 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         keyboard.add(operatorPanel);
     }
 
-    private void parseExpression(String expression) {
+    private double parseExpression(String expression) {
+        String[] tokens = expression.split(" ");
+        for (int i = 0; i < tokens.length; i++) {
+            System.out.println(tokens[i]);
+        }
+        ArrayList<String> outputQueue = new ArrayList<String>();
+        ArrayList<String> operatorStack = new ArrayList<String>();
+        //for (char c : expression.toCharArray()) {
+        //    if (Character.isDigit(c)) {
+
+        //    }
+        //}
+        return 0;
+    }
+
+    private void delete() {
+        if (expression.length() < 2) {
+            expression = "";
+        }
+        else {
+        char lastCharOfExpression = expression.charAt(expression.length() - 1);
+        char secondLastCharOfExpression = expression.charAt(expression.length() - 2);
+        switch (lastCharOfExpression) {
+            case ' ':
+                switch (secondLastCharOfExpression) {
+                    case '+':
+                    case '-':
+                    case '*':
+                    case '/':
+                        expression = expression.substring(0, expression.length() - 3);
+                        break;
+
+                    case '(':
+                        expression = expression.substring(0, expression.length() - 2);
+                        break;
+                }
+                break;
+
+            case ')':
+                expression = expression.substring(0, expression.length() - 2);
+                break;
+
+            default:
+                expression = expression.substring(0, expression.length() - 1);
+                break;
+            }
+        }
     }
 
     public static void main(String[] args) {
