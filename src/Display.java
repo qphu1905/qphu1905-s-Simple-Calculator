@@ -1,8 +1,10 @@
-import javax.swing.*;
+import javax.swing.JTextPane;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import java.awt.*;
+import javax.swing.BoxLayout;
+import java.awt.Dimension;
+import java.awt.Color;
 
 public class Display extends javax.swing.JPanel {
     private JTextPane expressionDisplay;

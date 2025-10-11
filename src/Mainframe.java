@@ -1,5 +1,7 @@
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.BoxLayout;
+import java.awt.Dimension;
 import java.util.ArrayList;
 
 public class Mainframe extends javax.swing.JFrame {
@@ -148,11 +150,5 @@ public class Mainframe extends javax.swing.JFrame {
             }
         }
         return stack.getFirst();
-    }
-
-    public static void main (String[] args) {
-        Toolkit tk = Toolkit.getDefaultToolkit();
-        Dimension screenSize = tk.getScreenSize();
-        new Mainframe(screenSize);
     }
 }
