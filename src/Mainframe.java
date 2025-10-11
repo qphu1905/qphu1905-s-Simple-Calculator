@@ -1,23 +1,15 @@
 import javax.swing.*;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-public class Mainframe extends javax.swing.JFrame implements ActionListener {
-    int width;
-    int height;
-    String expression = "";
-    Boolean expressionComplete = false;
+public class Mainframe extends javax.swing.JFrame {
     Display display;
+    Keyboard keyboard;
 
 
     public Mainframe(Dimension screenSize) {
-        width = screenSize.width;
-        height = screenSize.height;
+        int width = screenSize.width;
+        int height = screenSize.height;
         setSize(screenSize);
         setTitle("Simple Calculator");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -29,8 +21,8 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         Dimension displaySize = new Dimension(width, height / 3);
         display = new Display(displaySize);
 
-        JPanel keyboard = new JPanel();
-        setUpKeyboard(keyboard);
+        Dimension keyboardSize = new Dimension(width, 2 * height / 3);
+        keyboard = new Keyboard(keyboardSize, this);
 
         add(mainPanel);
         mainPanel.add(display);
@@ -38,184 +30,31 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         setVisible(true);
     }
 
-    private void setUpKeyboard(JPanel keyboard) {
-        Dimension keyboardSize = new Dimension(width, 2 * height / 3);
-        keyboard.setPreferredSize(keyboardSize);
-        keyboard.setMaximumSize(keyboardSize);
-        keyboard.setLayout(new BoxLayout(keyboard, BoxLayout.X_AXIS));
-        keyboard.setBackground(Color.GRAY);
+    public void keyboardPressed(String action) {
 
-        JPanel numberPanel = new JPanel();
-        numberPanel.setBackground(Color.GRAY);
-        numberPanel.setLayout(new GridLayout(4, 3));
-
-        for (int i = 0; i < 10; i++) {
-            JButton button = new JButton(Integer.toString(i));
-            button.setActionCommand(Integer.toString(i));
-            button.addActionListener(this);
-            numberPanel.add(button);
+        if (action.equals("=")) {
+            String result = calculateExpression(parseExpression(keyboard.getExpression()));
+            display.setResult(result);
         }
-
-        JButton leftParenthesis = new JButton("(");
-        leftParenthesis.setActionCommand("(");
-        leftParenthesis.addActionListener(this);
-        numberPanel.add(leftParenthesis);
-
-        JButton rightParenthesis = new JButton(")");
-        rightParenthesis.setActionCommand(")");
-        rightParenthesis.addActionListener(this);
-        numberPanel.add(rightParenthesis);
-
-        JPanel operatorPanel = new JPanel();
-        operatorPanel.setBackground(Color.GRAY);
-        operatorPanel.setLayout(new GridLayout(4, 2));
-
-        JButton clear = new JButton("AC");
-        clear.setActionCommand("ac");
-        clear.addActionListener(this);
-        operatorPanel.add(clear);
-
-        JButton del = new JButton("DEL");
-        del.setActionCommand("del");
-        del.addActionListener(this);
-        operatorPanel.add(del);
-
-        JButton plus = new JButton("+");
-        plus.setActionCommand("+");
-        plus.addActionListener(this);
-        operatorPanel.add(plus);
-
-        JButton minus = new JButton("-");
-        minus.setActionCommand("-");
-        minus.addActionListener(this);
-        operatorPanel.add(minus);
-
-        JButton multiply = new JButton("x");
-        multiply.setActionCommand("*");
-        multiply.addActionListener(this);
-        operatorPanel.add(multiply);
-
-        JButton divide = new JButton("/");
-        divide.setActionCommand("/");
-        divide.addActionListener(this);
-        operatorPanel.add(divide);
-
-        JButton dot = new JButton(".");
-        dot.setActionCommand(".");
-        dot.addActionListener(this);
-        operatorPanel.add(dot);
-
-        JButton equals = new JButton("=");
-        equals.setActionCommand("=");
-        equals.addActionListener(this);
-        operatorPanel.add(equals);
-
-        keyboard.add(numberPanel);
-        keyboard.add(operatorPanel);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        String action = e.getActionCommand();
-        if (expressionComplete == false) {
-            switch (action) {
-                case "del":
-                    delete();
-                    display.setExpression(expression);
-                    break;
-
-                case "ac":
-                    expression = "";
-                    display.clearExpression();
-                    display.clearResult();
-                    break;
-
-                case "=":
-                    expressionComplete = true;
-                    display.setResult(calculateExpression(parseExpression()));
-                    break;
-
-                // Operators and Parenthesis needs padding to be parsed correctly
-                case "+":
-                case "-":
-                case "*":
-                case "/":
-                    expression = expression + " " + action + " ";       //left and right padding for parenthesis
-                    display.setExpression(expression);
-                    break;
-
-                case "(":
-                    expression = expression + action + " ";     //right padding for left parenthesis
-                    display.setExpression(expression);
-                    break;
-
-                case ")":
-                    expression = expression + " " + action;     //left padding for right parenthesis
-                    display.setExpression(expression);
-                    break;
-
-                default:
-                    expression = expression + action;
-                    display.setExpression(expression);
-                    break;
+        else if (action.equals("del")) {
+            if (keyboard.expressionIsComplete()) {
+                display.clearResult();
+                display.setExpression(keyboard.getExpression());
             }
+            else {
+                display.setExpression(keyboard.getExpression());
+            }
+        }
+        else if (action.equals("ac")) {
+            display.clearExpression();
+            display.clearResult();
         }
         else {
-            switch (e.getActionCommand()) {
-                case "del":
-                    delete();
-                    display.setExpression(expression);
-                    display.clearResult();
-                    expressionComplete = false;
-                    break;
-
-                case "ac":
-                    expression = "";
-                    display.clearExpression();
-                    display.clearResult();
-                    expressionComplete = false;
-                    break;
-
-                default:
-                    break;
-            }
+            display.setExpression(keyboard.getExpression());
         }
     }
 
-    private void delete() {
-        if (expression.length() < 2) {
-            expression = "";
-        }
-        else {
-        char lastCharOfExpression = expression.charAt(expression.length() - 1);
-        char secondLastCharOfExpression = expression.charAt(expression.length() - 2);
-        switch (lastCharOfExpression) {
-            case ' ':
-                switch (secondLastCharOfExpression) {
-                    case '+':
-                    case '-':
-                    case '*':
-                    case '/':
-                        expression = expression.substring(0, expression.length() - 3);
-                        break;
-
-                    case '(':
-                        expression = expression.substring(0, expression.length() - 2);
-                        break;
-                }
-                break;
-
-            case ')':
-                expression = expression.substring(0, expression.length() - 2);
-                break;
-
-            default:
-                expression = expression.substring(0, expression.length() - 1);
-                break;
-            }
-        }
-    }
-
-    private ArrayList<String> parseExpression() {
+    private ArrayList<String> parseExpression(String expression) {
         String[] tokens = expression.split(" ");
         ArrayList<String> outputQueue = new ArrayList<>();
         ArrayList<String> operatorStack = new ArrayList<>();
