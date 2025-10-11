@@ -12,23 +12,22 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
     int height;
     String expression = "";
     Boolean expressionComplete = false;
-    JTextPane expressionDisplay;
-    JTextPane resultDisplay;
+    Display display;
 
 
     public Mainframe(Dimension screenSize) {
         width = screenSize.width;
         height = screenSize.height;
         setSize(screenSize);
-        setTitle("Calculator");
+        setTitle("Simple Calculator");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setPreferredSize(screenSize);
 
-        JPanel display = new JPanel();
-        setUpDisplay(display);
+        Dimension displaySize = new Dimension(width, height / 3);
+        display = new Display(displaySize);
 
         JPanel keyboard = new JPanel();
         setUpKeyboard(keyboard);
@@ -37,45 +36,6 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         mainPanel.add(display);
         mainPanel.add(keyboard);
         setVisible(true);
-    }
-
-    private void setUpDisplay(JPanel display) {
-        Dimension displaySize = new Dimension(width, height / 3);
-        display.setPreferredSize(displaySize);
-        display.setMaximumSize(displaySize);
-        display.setLayout(new BoxLayout(display, BoxLayout.Y_AXIS));
-
-        expressionDisplay = new JTextPane();
-        Dimension expressionDisplaySize = new Dimension(width, height / 6);
-        expressionDisplay.setPreferredSize(expressionDisplaySize);
-        expressionDisplay.setMinimumSize(expressionDisplaySize);
-        expressionDisplay.setBackground(Color.BLACK);
-
-        StyledDocument expressionDisplayDoc = expressionDisplay.getStyledDocument();
-        SimpleAttributeSet expressionDisplayAttributes = new SimpleAttributeSet();
-        StyleConstants.setAlignment(expressionDisplayAttributes, StyleConstants.ALIGN_LEFT);
-        StyleConstants.setFontSize(expressionDisplayAttributes, 48);
-        StyleConstants.setForeground(expressionDisplayAttributes, Color.WHITE);
-        expressionDisplayDoc.setParagraphAttributes(0, expressionDisplayDoc.getLength(), expressionDisplayAttributes, true);
-        expressionDisplay.setText("");
-
-        resultDisplay = new JTextPane();
-        Dimension resultDisplaySize = new Dimension(width, height / 6);
-        resultDisplay.setPreferredSize(resultDisplaySize);
-        resultDisplay.setMinimumSize(resultDisplaySize);
-        resultDisplay.setBackground(Color.BLACK);
-
-        StyledDocument resultDisplayDoc = resultDisplay.getStyledDocument();
-        SimpleAttributeSet resultDisplayAttributes = new SimpleAttributeSet();
-        StyleConstants.setAlignment(resultDisplayAttributes, StyleConstants.ALIGN_RIGHT);
-        StyleConstants.setFontSize(resultDisplayAttributes, 48);
-        StyleConstants.setBold(resultDisplayAttributes, true);
-        StyleConstants.setForeground(resultDisplayAttributes, Color.WHITE);
-        resultDisplayDoc.setParagraphAttributes(0, resultDisplayDoc.getLength(), resultDisplayAttributes, true);
-        resultDisplay.setText("");
-
-        display.add(expressionDisplay);
-        display.add(resultDisplay);
     }
 
     private void setUpKeyboard(JPanel keyboard) {
@@ -160,18 +120,18 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
             switch (action) {
                 case "del":
                     delete();
-                    expressionDisplay.setText(expression);
+                    display.setExpression(expression);
                     break;
 
                 case "ac":
                     expression = "";
-                    expressionDisplay.setText("");
-                    resultDisplay.setText("");
+                    display.clearExpression();
+                    display.clearResult();
                     break;
 
                 case "=":
                     expressionComplete = true;
-                    resultDisplay.setText(calculateExpression(parseExpression()));
+                    display.setResult(calculateExpression(parseExpression()));
                     break;
 
                 // Operators and Parenthesis needs padding to be parsed correctly
@@ -180,38 +140,38 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
                 case "*":
                 case "/":
                     expression = expression + " " + action + " ";       //left and right padding for parenthesis
-                    expressionDisplay.setText(expression);
+                    display.setExpression(expression);
                     break;
 
                 case "(":
                     expression = expression + action + " ";     //right padding for left parenthesis
-                    expressionDisplay.setText(expression);
+                    display.setExpression(expression);
                     break;
 
                 case ")":
                     expression = expression + " " + action;     //left padding for right parenthesis
-                    expressionDisplay.setText(expression);
+                    display.setExpression(expression);
                     break;
 
                 default:
                     expression = expression + action;
-                    expressionDisplay.setText(expression);
+                    display.setExpression(expression);
                     break;
             }
         }
-        else if (expressionComplete) {
+        else {
             switch (e.getActionCommand()) {
                 case "del":
                     delete();
-                    expressionDisplay.setText(expression);
-                    resultDisplay.setText("");
+                    display.setExpression(expression);
+                    display.clearResult();
                     expressionComplete = false;
                     break;
 
                 case "ac":
                     expression = "";
-                    expressionDisplay.setText("");
-                    resultDisplay.setText("");
+                    display.clearExpression();
+                    display.clearResult();
                     expressionComplete = false;
                     break;
 
@@ -260,15 +220,15 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         ArrayList<String> outputQueue = new ArrayList<>();
         ArrayList<String> operatorStack = new ArrayList<>();
 
-        for (int i = 0; i < tokens.length; i++) {
-            switch (tokens[i]) {
+        for (String token : tokens) {
+            switch (token) {
                 case "*":
                 case "/":
                     while (!operatorStack.isEmpty() && !operatorStack.getLast().equals("(") && (operatorStack.getLast().equals("*") || operatorStack.getLast().equals("/"))) {
                         outputQueue.add(operatorStack.getLast());
                         operatorStack.removeLast();
                     }
-                    operatorStack.add(tokens[i]);
+                    operatorStack.add(token);
                     break;
 
                 case "+":
@@ -277,11 +237,11 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
                         outputQueue.add(operatorStack.getLast());
                         operatorStack.removeLast();
                     }
-                    operatorStack.add(tokens[i]);
+                    operatorStack.add(token);
                     break;
 
                 case "(":
-                    operatorStack.add(tokens[i]);
+                    operatorStack.add(token);
                     break;
 
                 case ")":
@@ -298,7 +258,7 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
                     break;
 
                 default:
-                    outputQueue.add(tokens[i]);
+                    outputQueue.add(token);
             }
         }
 
@@ -314,8 +274,8 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         ArrayList<String> stack = new ArrayList<>();
 
         double result;
-        for (int i = 0; i < parsedTokens.size(); i++) {
-            switch (parsedTokens.get(i)) {
+        for (String parsedToken : parsedTokens) {
+            switch (parsedToken) {
                 case "+":
                     result = Double.parseDouble(stack.get(stack.size() - 1)) + Double.parseDouble(stack.get(stack.size() - 2));
                     stack.removeLast();
@@ -345,7 +305,7 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
                     break;
 
                 default:
-                    stack.add(parsedTokens.get(i));
+                    stack.add(parsedToken);
             }
         }
         return stack.getFirst();
