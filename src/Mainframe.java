@@ -39,82 +39,11 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         setVisible(true);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        String action = e.getActionCommand();
-        if (expressionComplete == false) {
-            switch (action) {
-                //todo: fix delete not working with spaces DONE
-                case "del":
-                    delete();
-                    expressionDisplay.setText(expression);
-                    break;
-
-                case "ac":
-                    expression = "";
-                    expressionDisplay.setText("");
-                    resultDisplay.setText("");
-                    break;
-
-                case "=":
-                    expressionComplete = true;
-                    resultDisplay.setText(String.valueOf(parseExpression(expression)));
-                    break;
-
-                // Operators and Parenthesis needs padding to be parsed correctly
-                case "+":
-                case "-":
-                case "*":
-                case "/":
-                    expression = expression + " " + action + " ";       //left and right padding for parenthesis
-                    expressionDisplay.setText(expression);
-                    break;
-
-                case "(":
-                    expression = expression + action + " ";     //right padding for left parenthesis
-                    expressionDisplay.setText(expression);
-                    break;
-
-                case ")":
-                    expression = expression + " " + action;     //left padding for right parenthesis
-                    expressionDisplay.setText(expression);
-                    break;
-
-                default:
-                    expression = expression + action;
-                    expressionDisplay.setText(expression);
-                    break;
-            }
-        }
-        else if (expressionComplete) {
-            switch (e.getActionCommand()) {
-                //todo: fix delete not working with spaces DONE
-                case "del":
-                    delete();
-                    expressionDisplay.setText(expression);
-                    resultDisplay.setText("");
-                    expressionComplete = false;
-                    break;
-
-                case "ac":
-                    expression = "";
-                    expressionDisplay.setText("");
-                    resultDisplay.setText("");
-                    expressionComplete = false;
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    }
-
     private void setUpDisplay(JPanel display) {
         Dimension displaySize = new Dimension(width, height / 3);
         display.setPreferredSize(displaySize);
         display.setMaximumSize(displaySize);
         display.setLayout(new BoxLayout(display, BoxLayout.Y_AXIS));
-        display.setBackground(Color.WHITE);
-
 
         expressionDisplay = new JTextPane();
         Dimension expressionDisplaySize = new Dimension(width, height / 6);
@@ -128,7 +57,7 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         StyleConstants.setFontSize(expressionDisplayAttributes, 48);
         StyleConstants.setForeground(expressionDisplayAttributes, Color.WHITE);
         expressionDisplayDoc.setParagraphAttributes(0, expressionDisplayDoc.getLength(), expressionDisplayAttributes, true);
-        expressionDisplay.setText("Expression");
+        expressionDisplay.setText("");
 
         resultDisplay = new JTextPane();
         Dimension resultDisplaySize = new Dimension(width, height / 6);
@@ -143,7 +72,7 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         StyleConstants.setBold(resultDisplayAttributes, true);
         StyleConstants.setForeground(resultDisplayAttributes, Color.WHITE);
         resultDisplayDoc.setParagraphAttributes(0, resultDisplayDoc.getLength(), resultDisplayAttributes, true);
-        resultDisplay.setText("Result");
+        resultDisplay.setText("");
 
         display.add(expressionDisplay);
         display.add(resultDisplay);
@@ -225,19 +154,71 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         keyboard.add(operatorPanel);
     }
 
-    private double parseExpression(String expression) {
-        String[] tokens = expression.split(" ");
-        for (int i = 0; i < tokens.length; i++) {
-            System.out.println(tokens[i]);
-        }
-        ArrayList<String> outputQueue = new ArrayList<String>();
-        ArrayList<String> operatorStack = new ArrayList<String>();
-        //for (char c : expression.toCharArray()) {
-        //    if (Character.isDigit(c)) {
+    public void actionPerformed(ActionEvent e) {
+        String action = e.getActionCommand();
+        if (expressionComplete == false) {
+            switch (action) {
+                case "del":
+                    delete();
+                    expressionDisplay.setText(expression);
+                    break;
 
-        //    }
-        //}
-        return 0;
+                case "ac":
+                    expression = "";
+                    expressionDisplay.setText("");
+                    resultDisplay.setText("");
+                    break;
+
+                case "=":
+                    expressionComplete = true;
+                    resultDisplay.setText(calculateExpression(parseExpression()));
+                    break;
+
+                // Operators and Parenthesis needs padding to be parsed correctly
+                case "+":
+                case "-":
+                case "*":
+                case "/":
+                    expression = expression + " " + action + " ";       //left and right padding for parenthesis
+                    expressionDisplay.setText(expression);
+                    break;
+
+                case "(":
+                    expression = expression + action + " ";     //right padding for left parenthesis
+                    expressionDisplay.setText(expression);
+                    break;
+
+                case ")":
+                    expression = expression + " " + action;     //left padding for right parenthesis
+                    expressionDisplay.setText(expression);
+                    break;
+
+                default:
+                    expression = expression + action;
+                    expressionDisplay.setText(expression);
+                    break;
+            }
+        }
+        else if (expressionComplete) {
+            switch (e.getActionCommand()) {
+                case "del":
+                    delete();
+                    expressionDisplay.setText(expression);
+                    resultDisplay.setText("");
+                    expressionComplete = false;
+                    break;
+
+                case "ac":
+                    expression = "";
+                    expressionDisplay.setText("");
+                    resultDisplay.setText("");
+                    expressionComplete = false;
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 
     private void delete() {
@@ -274,7 +255,103 @@ public class Mainframe extends javax.swing.JFrame implements ActionListener {
         }
     }
 
-    public static void main(String[] args) {
+    private ArrayList<String> parseExpression() {
+        String[] tokens = expression.split(" ");
+        ArrayList<String> outputQueue = new ArrayList<>();
+        ArrayList<String> operatorStack = new ArrayList<>();
+
+        for (int i = 0; i < tokens.length; i++) {
+            switch (tokens[i]) {
+                case "*":
+                case "/":
+                    while (!operatorStack.isEmpty() && !operatorStack.getLast().equals("(") && (operatorStack.getLast().equals("*") || operatorStack.getLast().equals("/"))) {
+                        outputQueue.add(operatorStack.getLast());
+                        operatorStack.removeLast();
+                    }
+                    operatorStack.add(tokens[i]);
+                    break;
+
+                case "+":
+                case "-":
+                    while (!operatorStack.isEmpty() && !(operatorStack.getLast().equals("("))) {
+                        outputQueue.add(operatorStack.getLast());
+                        operatorStack.removeLast();
+                    }
+                    operatorStack.add(tokens[i]);
+                    break;
+
+                case "(":
+                    operatorStack.add(tokens[i]);
+                    break;
+
+                case ")":
+                    while (!operatorStack.isEmpty() && !(operatorStack.getLast().equals("("))) {
+                        outputQueue.add(operatorStack.getLast());
+                        operatorStack.removeLast();
+                    }
+
+                    if (operatorStack.isEmpty()) {
+                        throw new RuntimeException("Mismatching parentheses");
+                    } else if (operatorStack.getLast().equals("(")) {
+                        operatorStack.removeLast();
+                    }
+                    break;
+
+                default:
+                    outputQueue.add(tokens[i]);
+            }
+        }
+
+        while (!operatorStack.isEmpty()) {
+            outputQueue.add(operatorStack.getLast());
+            operatorStack.removeLast();
+        }
+
+        return outputQueue;
+    }
+
+    private String calculateExpression (ArrayList<String> parsedTokens) {
+        ArrayList<String> stack = new ArrayList<>();
+
+        double result;
+        for (int i = 0; i < parsedTokens.size(); i++) {
+            switch (parsedTokens.get(i)) {
+                case "+":
+                    result = Double.parseDouble(stack.get(stack.size() - 1)) + Double.parseDouble(stack.get(stack.size() - 2));
+                    stack.removeLast();
+                    stack.removeLast();
+                    stack.add(Double.toString(result));
+                    break;
+
+                case "-":
+                    result = Double.parseDouble(stack.get(stack.size() - 2)) - Double.parseDouble(stack.get(stack.size() - 1));
+                    stack.removeLast();
+                    stack.removeLast();
+                    stack.add(Double.toString(result));
+                    break;
+
+                case "*":
+                    result = Double.parseDouble(stack.get(stack.size() - 1)) * Double.parseDouble(stack.get(stack.size() - 2));
+                    stack.removeLast();
+                    stack.removeLast();
+                    stack.add(Double.toString(result));
+                    break;
+
+                case "/":
+                    result = Double.parseDouble(stack.get(stack.size() - 1)) / Double.parseDouble(stack.get(stack.size() - 2));
+                    stack.removeLast();
+                    stack.removeLast();
+                    stack.add(Double.toString(result));
+                    break;
+
+                default:
+                    stack.add(parsedTokens.get(i));
+            }
+        }
+        return stack.getFirst();
+    }
+
+    public static void main (String[] args) {
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension screenSize = tk.getScreenSize();
         new Mainframe(screenSize);
