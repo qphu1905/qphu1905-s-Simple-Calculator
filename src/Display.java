@@ -58,12 +58,20 @@ public class Display extends javax.swing.JPanel {
         expressionDisplay.setText(expression);
     }
 
+    public String getExpression() {
+        return expressionDisplay.getText();
+    }
+
     public void clearExpression() {
         expressionDisplay.setText("");
     }
 
     public void setResult(String result) {
         resultDisplay.setText(result);
+    }
+
+    public String getResult () {
+        return resultDisplay.getText();
     }
 
     public void clearResult() {
