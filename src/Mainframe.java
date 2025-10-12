@@ -36,8 +36,14 @@ public class Mainframe extends javax.swing.JFrame {
         switch (action) {
 
             case "=":
-                String result = calculateExpression(parseExpression(keyboard.getExpression()));
-                display.setResult(result);
+                try {
+                    String result = calculateExpression(parseExpression(keyboard.getExpression()));
+                    display.setResult(result);
+                }
+                catch (RuntimeException e) {
+                    display.setResult(e.getMessage());
+                }
+                break;
 
             case "del":
                 if (keyboard.expressionIsComplete()) {
@@ -47,18 +53,28 @@ public class Mainframe extends javax.swing.JFrame {
                 else {
                     display.setExpression(keyboard.getExpression());
                 }
+                break;
 
             case "ac":
                 display.clearExpression();
                 display.clearResult();
+                break;
 
             default:
                 display.setExpression(keyboard.getExpression());
+                break;
         }
     }
 
     private ArrayList<String> parseExpression(String expression) {
         String[] tokens = expression.split(" ");
+        switch (tokens[tokens.length - 1]) {
+            case "+":
+            case "-":
+            case "*":
+            case "/":
+                throw new RuntimeException("Syntax error");
+        }
         ArrayList<String> outputQueue = new ArrayList<>();
         ArrayList<String> operatorStack = new ArrayList<>();
 
@@ -98,7 +114,7 @@ public class Mainframe extends javax.swing.JFrame {
                     }
 
                     if (operatorStack.isEmpty()) {
-                        throw new RuntimeException("Mismatching parentheses");
+                        throw new RuntimeException("Syntax error");
                     } else if (operatorStack.getLast().equals("(")) {
                         operatorStack.removeLast();
                     }
@@ -111,7 +127,7 @@ public class Mainframe extends javax.swing.JFrame {
 
         while (!operatorStack.isEmpty()) {
             if (operatorStack.getLast().equals("(")) {
-                throw new RuntimeException("Mismatching parentheses");
+                throw new RuntimeException("Syntax error");
             }
             else {
                 outputQueue.add(operatorStack.getLast());
