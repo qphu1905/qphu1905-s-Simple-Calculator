@@ -8,7 +8,6 @@ public class Mainframe extends javax.swing.JFrame {
     Display display;
     Keyboard keyboard;
 
-
     public Mainframe(Dimension screenSize) {
         int width = screenSize.width;
         int height = screenSize.height;
@@ -104,8 +103,13 @@ public class Mainframe extends javax.swing.JFrame {
         }
 
         while (!operatorStack.isEmpty()) {
-            outputQueue.add(operatorStack.getLast());
-            operatorStack.removeLast();
+            if (operatorStack.getLast().equals("(")) {
+                throw new RuntimeException("Mismatching parentheses");
+            }
+            else {
+                outputQueue.add(operatorStack.getLast());
+                operatorStack.removeLast();
+            }
         }
 
         return outputQueue;
