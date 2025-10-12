@@ -33,25 +33,27 @@ public class Mainframe extends javax.swing.JFrame {
 
     public void keyboardPressed(String action) {
 
-        if (action.equals("=")) {
-            String result = calculateExpression(parseExpression(keyboard.getExpression()));
-            display.setResult(result);
-        }
-        else if (action.equals("del")) {
-            if (keyboard.expressionIsComplete()) {
+        switch (action) {
+
+            case "=":
+                String result = calculateExpression(parseExpression(keyboard.getExpression()));
+                display.setResult(result);
+
+            case "del":
+                if (keyboard.expressionIsComplete()) {
+                    display.clearResult();
+                    display.setExpression(keyboard.getExpression());
+                }
+                else {
+                    display.setExpression(keyboard.getExpression());
+                }
+
+            case "ac":
+                display.clearExpression();
                 display.clearResult();
+
+            default:
                 display.setExpression(keyboard.getExpression());
-            }
-            else {
-                display.setExpression(keyboard.getExpression());
-            }
-        }
-        else if (action.equals("ac")) {
-            display.clearExpression();
-            display.clearResult();
-        }
-        else {
-            display.setExpression(keyboard.getExpression());
         }
     }
 
@@ -62,6 +64,11 @@ public class Mainframe extends javax.swing.JFrame {
 
         for (String token : tokens) {
             switch (token) {
+                // Due to how the parser works the existence of an empty string
+                // in the tokenized list means the user inserted two operands in
+                // a row. A syntax error will be thrown.
+                case "":
+                    throw new RuntimeException("Syntax error");
                 case "*":
                 case "/":
                     while (!operatorStack.isEmpty() && !operatorStack.getLast().equals("(") && (operatorStack.getLast().equals("*") || operatorStack.getLast().equals("/"))) {
