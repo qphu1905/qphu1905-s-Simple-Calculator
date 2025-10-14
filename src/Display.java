@@ -3,8 +3,9 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.BoxLayout;
-import java.awt.Dimension;
-import java.awt.Color;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.Locale;
 
 public class Display extends javax.swing.JPanel {
     private JTextPane expressionDisplay;
@@ -28,9 +29,13 @@ public class Display extends javax.swing.JPanel {
 
         StyledDocument expressionDisplayDoc = expressionDisplay.getStyledDocument();
         SimpleAttributeSet expressionDisplayAttributes = new SimpleAttributeSet();
+
         StyleConstants.setAlignment(expressionDisplayAttributes, StyleConstants.ALIGN_LEFT);
+        StyleConstants.setFontFamily(expressionDisplayAttributes, "Monospaced");
         StyleConstants.setFontSize(expressionDisplayAttributes, 48);
+        StyleConstants.setBold(expressionDisplayAttributes, true);
         StyleConstants.setForeground(expressionDisplayAttributes, Color.WHITE);
+
         expressionDisplayDoc.setParagraphAttributes(0, expressionDisplayDoc.getLength(), expressionDisplayAttributes, true);
         expressionDisplay.setText("");
 
@@ -44,10 +49,13 @@ public class Display extends javax.swing.JPanel {
 
         StyledDocument resultDisplayDoc = resultDisplay.getStyledDocument();
         SimpleAttributeSet resultDisplayAttributes = new SimpleAttributeSet();
+
         StyleConstants.setAlignment(resultDisplayAttributes, StyleConstants.ALIGN_RIGHT);
+        StyleConstants.setFontFamily(resultDisplayAttributes, "Monospaced");
         StyleConstants.setFontSize(resultDisplayAttributes, 48);
         StyleConstants.setBold(resultDisplayAttributes, true);
         StyleConstants.setForeground(resultDisplayAttributes, Color.WHITE);
+
         resultDisplayDoc.setParagraphAttributes(0, resultDisplayDoc.getLength(), resultDisplayAttributes, true);
         resultDisplay.setText("");
 
@@ -77,5 +85,4 @@ public class Display extends javax.swing.JPanel {
     public void clearResult() {
         resultDisplay.setText("");
     }
-
 }
