@@ -173,7 +173,9 @@ public class Mainframe extends javax.swing.JFrame {
                     break;
 
                 default:
-                    stack.add(parsedToken);
+                    result = Double.parseDouble(parsedToken);
+                    stack.add(Double.toString(result));
+                    break;
             }
         }
         return stack.getFirst();
