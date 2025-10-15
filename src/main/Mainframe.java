@@ -1,14 +1,22 @@
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.BoxLayout;
-import java.awt.Dimension;
+package main;
+
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 
 public class Mainframe extends javax.swing.JFrame {
     Display display;
     Keyboard keyboard;
+    private String expression;
+    private Boolean expressionComplete;
+    private double result;
 
     public Mainframe(Dimension screenSize) {
+
+        expression = "";
+        expressionComplete = false;
+        result = 0;
+
         int width = screenSize.width;
         int height = screenSize.height;
         setSize(screenSize);
@@ -34,39 +42,137 @@ public class Mainframe extends javax.swing.JFrame {
     public void keyboardPressed(String action) {
 
         switch (action) {
-
-            case "=":
-                try {
-                    String result = calculateExpression(parseExpression(keyboard.getExpression()));
-                    display.setResult(result);
-                }
-                catch (RuntimeException e) {
-                    display.setResult(e.getMessage());
-                }
-                break;
-
             case "del":
-                if (keyboard.expressionIsComplete()) {
-                    display.clearResult();
-                    display.setExpression(keyboard.getExpression());
+
+                if (expressionComplete) {
+
+                    expressionComplete = false;
+
                 }
-                else {
-                    display.setExpression(keyboard.getExpression());
-                }
+
+                delete();
+                display.setExpression(expression);
+                display.clearResult();
+
                 break;
 
             case "ac":
+
+                if (expressionComplete) {
+
+                    expressionComplete = false;
+
+                }
+
+                expression = "";
                 display.clearExpression();
                 display.clearResult();
+
+                break;
+
+            case "=":
+                expressionComplete = true;
+
+                try {
+
+                    String resultString = calculateExpression(parseExpression());
+                    result = Double.parseDouble(resultString);
+                    display.setResult(resultString);
+
+                }
+                catch (RuntimeException e) {
+
+                    display.setResult(e.getMessage());
+
+                }
+
+                break;
+
+            // Operators and Parenthesis needs padding to be parsed correctly
+            case "+":
+            case "-":
+            case "*":
+            case "/":
+
+                if (expressionComplete == false) {
+
+                    expression = expression + " " + action + " ";       //left and right padding for parenthesis
+                    display.setExpression(expression);
+
+                }
+
+                break;
+
+            case "(":
+
+                if (expressionComplete == false) {
+
+                    expression = expression + action + " ";     //right padding for left parenthesis
+                    display.setExpression(expression);
+
+                }
+
+                break;
+
+            case ")":
+
+                if (expressionComplete == false) {
+
+                    expression = expression + " " + action;     //left padding for right parenthesis
+                    display.setExpression(expression);
+
+                }
+
                 break;
 
             default:
-                display.setExpression(keyboard.getExpression());
+
+                if (expressionComplete == false) {
+
+                    expression = expression + action;
+                    display.setExpression(expression);
+
+                }
+
                 break;
         }
     }
 
-    private ArrayList<String> parseExpression(String expression) {
+    private void delete() {
+        if (expression.length() < 2) {
+            expression = "";
+        }
+        else {
+            char lastCharOfExpression = expression.charAt(expression.length() - 1);
+            char secondLastCharOfExpression = expression.charAt(expression.length() - 2);
+            switch (lastCharOfExpression) {
+                case ' ':
+                    switch (secondLastCharOfExpression) {
+                        case '+':
+                        case '-':
+                        case '*':
+                        case '/':
+                            expression = expression.substring(0, expression.length() - 3);
+                            break;
+
+                        case '(':
+                            expression = expression.substring(0, expression.length() - 2);
+                            break;
+                    }
+                    break;
+
+                case ')':
+                    expression = expression.substring(0, expression.length() - 2);
+                    break;
+
+                default:
+                    expression = expression.substring(0, expression.length() - 1);
+                    break;
+            }
+        }
+    }
+
+    private ArrayList<String> parseExpression() {
         String[] tokens = expression.split(" ");
         switch (tokens[tokens.length - 1]) {
             case "+":
@@ -141,43 +247,51 @@ public class Mainframe extends javax.swing.JFrame {
     private String calculateExpression (ArrayList<String> parsedTokens) {
         ArrayList<String> stack = new ArrayList<>();
 
-        double result;
+        double intermidiateResult;
         for (String parsedToken : parsedTokens) {
             switch (parsedToken) {
                 case "+":
-                    result = Double.parseDouble(stack.get(stack.size() - 1)) + Double.parseDouble(stack.get(stack.size() - 2));
+                    intermidiateResult = Double.parseDouble(stack.get(stack.size() - 1)) + Double.parseDouble(stack.get(stack.size() - 2));
                     stack.removeLast();
                     stack.removeLast();
-                    stack.add(Double.toString(result));
+                    stack.add(Double.toString(intermidiateResult));
                     break;
 
                 case "-":
-                    result = Double.parseDouble(stack.get(stack.size() - 2)) - Double.parseDouble(stack.get(stack.size() - 1));
+                    intermidiateResult = Double.parseDouble(stack.get(stack.size() - 2)) - Double.parseDouble(stack.get(stack.size() - 1));
                     stack.removeLast();
                     stack.removeLast();
-                    stack.add(Double.toString(result));
+                    stack.add(Double.toString(intermidiateResult));
                     break;
 
                 case "*":
-                    result = Double.parseDouble(stack.get(stack.size() - 1)) * Double.parseDouble(stack.get(stack.size() - 2));
+                    intermidiateResult = Double.parseDouble(stack.get(stack.size() - 1)) * Double.parseDouble(stack.get(stack.size() - 2));
                     stack.removeLast();
                     stack.removeLast();
-                    stack.add(Double.toString(result));
+                    stack.add(Double.toString(intermidiateResult));
                     break;
 
                 case "/":
-                    result = Double.parseDouble(stack.get(stack.size() - 1)) / Double.parseDouble(stack.get(stack.size() - 2));
+                    intermidiateResult = Double.parseDouble(stack.get(stack.size() - 1)) / Double.parseDouble(stack.get(stack.size() - 2));
                     stack.removeLast();
                     stack.removeLast();
-                    stack.add(Double.toString(result));
+                    stack.add(Double.toString(intermidiateResult));
                     break;
 
                 default:
-                    result = Double.parseDouble(parsedToken);
-                    stack.add(Double.toString(result));
+                    intermidiateResult = Double.parseDouble(parsedToken);
+                    stack.add(Double.toString(intermidiateResult));
                     break;
             }
         }
         return stack.getFirst();
+    }
+
+    public void setExpression(String expression) {
+        this.expression = expression;
+    }
+
+    public double getResult() {
+        return result;
     }
 }
