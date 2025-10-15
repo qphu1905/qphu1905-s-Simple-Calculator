@@ -1,6 +1,6 @@
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.BoxLayout;
+package main;
+
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -8,15 +8,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class Keyboard extends JPanel implements ActionListener {
-    private String expression;
-    private Boolean expressionComplete = false;
     Mainframe parent;
     JPanel numberPanel;
     JPanel operatorPanel;
 
     public Keyboard(Dimension keyboardSize, Mainframe parent) {
         this.parent = parent;
-        expression = "";
 
         setPreferredSize(keyboardSize);
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -170,102 +167,8 @@ public class Keyboard extends JPanel implements ActionListener {
         add(operatorPanel);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        String action = e.getActionCommand();
-
-        if (expressionComplete == false) {
-            switch (action) {
-                case "del":
-                    delete();
-                    break;
-
-                case "ac":
-                    expression = "";
-                    break;
-
-                case "=":
-                    expressionComplete = true;
-                    break;
-
-                // Operators and Parenthesis needs padding to be parsed correctly
-                case "+":
-                case "-":
-                case "*":
-                case "/":
-                    expression = expression + " " + action + " ";       //left and right padding for parenthesis
-                    break;
-
-                case "(":
-                    expression = expression + action + " ";     //right padding for left parenthesis
-                    break;
-
-                case ")":
-                    expression = expression + " " + action;     //left padding for right parenthesis
-                    break;
-
-                default:
-                    expression = expression + action;
-                    break;
-            }
-        }
-        else {
-            switch (e.getActionCommand()) {
-                case "del":
-                    delete();
-                    expressionComplete = false;
-                    break;
-
-                case "ac":
-                    expression = "";
-                    expressionComplete = false;
-                    break;
-
-                default:
-                    break;
-            }
-        }
+    public void actionPerformed(ActionEvent ae) {
+        String action = ae.getActionCommand();
         parent.keyboardPressed(action);
-    }
-
-    private void delete() {
-        if (expression.length() < 2) {
-            expression = "";
-        }
-        else {
-            char lastCharOfExpression = expression.charAt(expression.length() - 1);
-            char secondLastCharOfExpression = expression.charAt(expression.length() - 2);
-            switch (lastCharOfExpression) {
-                case ' ':
-                    switch (secondLastCharOfExpression) {
-                        case '+':
-                        case '-':
-                        case '*':
-                        case '/':
-                            expression = expression.substring(0, expression.length() - 3);
-                            break;
-
-                        case '(':
-                            expression = expression.substring(0, expression.length() - 2);
-                            break;
-                    }
-                    break;
-
-                case ')':
-                    expression = expression.substring(0, expression.length() - 2);
-                    break;
-
-                default:
-                    expression = expression.substring(0, expression.length() - 1);
-                    break;
-            }
-        }
-    }
-
-    public String getExpression() {
-        return expression;
-    }
-
-    public Boolean expressionIsComplete() {
-        return expressionComplete;
     }
 }
