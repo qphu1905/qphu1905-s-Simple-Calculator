@@ -1,11 +1,10 @@
-import javax.swing.JTextPane;
+package main;
+
+import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.BoxLayout;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.Locale;
 
 public class Display extends javax.swing.JPanel {
     private JTextPane expressionDisplay;
